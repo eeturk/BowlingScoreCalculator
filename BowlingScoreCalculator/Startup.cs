@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using BowlingScoreCalculator.Interfaces;
+using BowlingScoreCalculator.Services;
 
 namespace BowlingScoreCalculator
 {
@@ -26,6 +28,7 @@ namespace BowlingScoreCalculator
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddSingleton<IScoreCalculator, ScoreCalculatorService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
