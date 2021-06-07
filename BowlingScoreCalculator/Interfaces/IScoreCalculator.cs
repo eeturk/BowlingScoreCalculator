@@ -8,6 +8,6 @@ namespace BowlingScoreCalculator.Interfaces
 {
     public interface IScoreCalculator
     {
-        ScoreCalculatorResponse CalculateScore();
+        ScoreCalculatorResponse GetProgressScore(ScoreCalculatorRequest request);
     }
 }
