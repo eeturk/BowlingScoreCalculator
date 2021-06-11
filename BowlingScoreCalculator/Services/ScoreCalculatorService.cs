@@ -5,112 +5,125 @@ using System.Threading.Tasks;
 using BowlingScoreCalculator.Interfaces;
 using BowlingScoreCalculator.Models;
 using Microsoft.Extensions.Configuration;
+using BowlingScoreCalculator.Common;
+using System.Net.Http;
+using System.Net;
 
 namespace BowlingScoreCalculator.Services
 {
     public class ScoreCalculatorService : IScoreCalculator
     {
-        public const int MaxPinValue = 10;
-        public const int MinPinValue = 0;
-        public const int MaxFramesCount = 10;
-        public const int MaxRollsCount = 21;
-        public const string PendingRoll = "*";
-
         public ScoreCalculatorResponse GetProgressScore(ScoreCalculatorRequest request)
         {
-            List<int> pinsDowned = request?.PinsDowned?.ToList();
-
-            if (pinsDowned == null || !pinsDowned.Any()) 
-                throw new ArgumentException("Please provide valid number of pins downed.");
-
-            if (pinsDowned.Count > MaxRollsCount) 
-                throw new ArgumentException("Total number of rolls exceeds the maximum value.");
-
-            if (pinsDowned.Any(p => p > MaxPinValue || p < MinPinValue))
-                throw new ArgumentException("A pin value is outside of allowable values.");
-            
-            int frameProgressScore = 0;
-            int framesCompleted = 0;
-            bool bonusRollProvided = false;
-
+            var response = new ScoreCalculatorResponse();
             List<string> frameProgressScores = new List<string>();
             bool gameCompleted = false;
 
-            for (int i = 0; i < pinsDowned.Count; i++)
+            try
             {
-                int currentPinDowned = pinsDowned[i];
-                bool isStrike = currentPinDowned == MaxPinValue;
-                bool isSpare = false;
+                List<int> pinsDowned = request?.PinsDowned?.ToList();
 
-                if (isStrike == false && (i + 1) < pinsDowned.Count)
-                {
-                    isSpare = currentPinDowned + pinsDowned[i + 1] == MaxPinValue;
-                }
+                if (pinsDowned == null || !pinsDowned.Any())
+                    throw new ArgumentException("Please provide valid number of pins downed.");
 
-                if (bonusRollProvided)
-                {
-                    continue;
-                }
+                if (pinsDowned.Count > Constants.MaxRollsCount)
+                    throw new ArgumentException("Total number of rolls exceeds the maximum value.");
 
-                if (isStrike)
+                if (pinsDowned.Any(p => p > Constants.MaxPinValue || p < Constants.MinPinValue))
+                    throw new ArgumentException("A pin value is outside of allowable values.");
+
+                int frameProgressScore = 0;
+                int framesCompleted = 0;
+                bool bonusRollProvided = false;
+                int totalRolls = pinsDowned.Count;
+
+                for (int i = 0; i < totalRolls; i++)
                 {
-                    bool canCompleteStrike = (i + 2) < pinsDowned.Count;
-                    if (canCompleteStrike)
+                    int currentPinDowned = pinsDowned[i];
+                    var rollsLeft = pinsDowned.GetRange(i, totalRolls - i);
+
+                    bool isStrike = currentPinDowned == Constants.MaxPinValue;
+                    bool isSpare = false;                 
+
+                    if (i < totalRolls - 1)
                     {
-                        int score = MaxPinValue + pinsDowned[i + 1] + pinsDowned[i + 2];
-                        frameProgressScore += score;
-                        frameProgressScores.Add(frameProgressScore.ToString());
-                        framesCompleted++;
+                        isSpare = currentPinDowned + pinsDowned[i + 1] == Constants.MaxPinValue;
                     }
-                    else
+
+                    if (bonusRollProvided)                   
+                        continue;                   
+
+                    if (isStrike)
                     {
-                       frameProgressScores.Add(PendingRoll);
+                        if (rollsLeft.Count < 3)
+                        {
+                            frameProgressScores.Add(Constants.PendingRoll);
+                        }
+                        else
+                        {
+                            int score = Constants.MaxPinValue + pinsDowned[i + 1] + pinsDowned[i + 2];
+                            frameProgressScore += score;
+                            frameProgressScores.Add(frameProgressScore.ToString());
+                        }
+
                     }
-                }
-                else if (isSpare)
-                {
-                    bool canCompleteSpare = (i + 2) < pinsDowned.Count;
-                    if (canCompleteSpare)
+                    else if (isSpare)
                     {
-                        int score = currentPinDowned + pinsDowned[i + 1] + pinsDowned[i + 2];
-                        frameProgressScore += score;
-                        frameProgressScores.Add(frameProgressScore.ToString());
-                        framesCompleted++;
+                        if (rollsLeft.Count < 3)
+                        {
+                            frameProgressScores.Add(Constants.PendingRoll);
+                        }
+                        else
+                        {
+                            int score = currentPinDowned + pinsDowned[i + 1] + pinsDowned[i + 2];
+                            frameProgressScore += score;
+                            frameProgressScores.Add(frameProgressScore.ToString());
+                        }
                         i++;
                     }
                     else
                     {
-                        frameProgressScores.Add(PendingRoll);
-                    }
-                }
-                else
-                {
-                    if ((i + 1) < pinsDowned.Count)
-                    {
-                        int score = currentPinDowned + pinsDowned[i + 1];
-                        frameProgressScore += score;
-                        frameProgressScores.Add(frameProgressScore.ToString());
-                        framesCompleted++;
+                        if (rollsLeft.Count < 2)
+                        {
+                            frameProgressScores.Add(Constants.PendingRoll);
+                        }
+                        else
+                        {
+                            int score = currentPinDowned + pinsDowned[i + 1];
+                            frameProgressScore += score;
+                            frameProgressScores.Add(frameProgressScore.ToString());
+                        }
                         i++;
                     }
-                    else
-                    {
-                        int score = currentPinDowned;
-                        frameProgressScore += score;
-                        frameProgressScores.Add(frameProgressScore.ToString());
-                    }
+
+                    framesCompleted++;
+                    bonusRollProvided = framesCompleted == Constants.MaxFramesCount && (isSpare || isStrike);
                 }
-                bonusRollProvided = framesCompleted == MaxFramesCount && (isSpare || isStrike);
+
+                gameCompleted = framesCompleted == Constants.MaxFramesCount;
+
+
+                response.FrameProgressScores = frameProgressScores;
+                response.GameCompleted = gameCompleted;
+                response.status = new ScoreCalculatorResponse.Status()
+                {
+                    Code = HttpStatusCode.OK,
+                    Message = "Success"
+                };
             }
-
-            gameCompleted = framesCompleted == MaxFramesCount;
-
-            var response = new ScoreCalculatorResponse(){ 
-                FrameProgressScores = frameProgressScores, 
-                GameCompleted = gameCompleted 
-            };
+            catch(Exception ex)
+            {
+                response.FrameProgressScores = frameProgressScores;
+                response.GameCompleted = gameCompleted;
+                response.status = new ScoreCalculatorResponse.Status()
+                {
+                    Code = HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                };
+            }
 
             return response;
         }
     }
 }
+

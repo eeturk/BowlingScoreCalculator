@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BowlingScoreCalculator.Interfaces;
 using BowlingScoreCalculator.Models;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 
 namespace BowlingScoreCalculator.Controllers
@@ -35,7 +36,10 @@ namespace BowlingScoreCalculator.Controllers
         {
             var response = _scoreCalculator.GetProgressScore(request);
 
+            if(response.status.Code == HttpStatusCode.BadRequest)
+                   return BadRequest(response);
             return Ok(response);
+         
         }
     }
 }

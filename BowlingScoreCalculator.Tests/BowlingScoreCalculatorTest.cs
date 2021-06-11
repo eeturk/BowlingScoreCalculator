@@ -17,8 +17,8 @@ namespace BowlingScoreCalculator.Tests
         {
             var NullRequest = new ScoreCalculatorRequest(){ PinsDowned = null };
             var service = new ScoreCalculatorService();
-
-            Xunit.Assert.Throws<ArgumentException>(() => service.GetProgressScore(NullRequest));
+            var response = service.GetProgressScore(NullRequest);
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.status.Code);
         }
 
         [Fact]
@@ -28,10 +28,9 @@ namespace BowlingScoreCalculator.Tests
             {
                 PinsDowned = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2 }
             };
-
             var service = new ScoreCalculatorService();
-
-            Xunit.Assert.Throws<ArgumentException>(() => service.GetProgressScore(PinsDownedCountGreaterThanMaxValueRequest));
+            var response = service.GetProgressScore(PinsDownedCountGreaterThanMaxValueRequest);
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.status.Code);
         }
 
         [Fact]
@@ -41,10 +40,9 @@ namespace BowlingScoreCalculator.Tests
             {
                 PinsDowned = new List<int> { 1, 2, -3, 4, 5 }
             };
-
             var service = new ScoreCalculatorService();
-
-            Xunit.Assert.Throws<ArgumentException>(() => service.GetProgressScore(NegativePinValueRequest));
+            var response = service.GetProgressScore(NegativePinValueRequest);
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.status.Code);
         }
 
         [Fact]
@@ -56,8 +54,8 @@ namespace BowlingScoreCalculator.Tests
             };
 
             var service = new ScoreCalculatorService();
-
-            Xunit.Assert.Throws<ArgumentException>(() => service.GetProgressScore(PinValueGreaterThanMaxValueRequest));
+            var response = service.GetProgressScore(PinValueGreaterThanMaxValueRequest);
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.status.Code);
         }
 
         [Fact]
@@ -75,9 +73,9 @@ namespace BowlingScoreCalculator.Tests
             };
 
             var service = new ScoreCalculatorService();
-
             var response = service.GetProgressScore(PerfectGameRequest);
 
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
             Xunit.Assert.Equal(ExpectedPerfectGameResponse.GameCompleted, response.GameCompleted);
             Xunit.Assert.Equal((ICollection)ExpectedPerfectGameResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
 
@@ -98,9 +96,9 @@ namespace BowlingScoreCalculator.Tests
             };
 
             var service = new ScoreCalculatorService();
-
             var response = service.GetProgressScore(GutterBallGameRequest);
 
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
             Xunit.Assert.Equal(ExpectedGutterBallGameResponse.GameCompleted, response.GameCompleted);
             Xunit.Assert.Equal((ICollection)ExpectedGutterBallGameResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
 
@@ -121,9 +119,9 @@ namespace BowlingScoreCalculator.Tests
             };
 
             var service = new ScoreCalculatorService();
-
             var response = service.GetProgressScore(NoSpareNoStrikeGameRequest);
 
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
             Xunit.Assert.Equal(ExpectedNoSpareNoStrikeGameResponse.GameCompleted, response.GameCompleted);
             Xunit.Assert.Equal((ICollection)ExpectedNoSpareNoStrikeGameResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
 
@@ -144,9 +142,9 @@ namespace BowlingScoreCalculator.Tests
             };
 
             var service = new ScoreCalculatorService();
-
             var response = service.GetProgressScore(SixFramesCompletedAllRollsOneRequest);
 
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
             Xunit.Assert.Equal(ExpectedSixFramesCompletedAllRollsOneResponse.GameCompleted, response.GameCompleted);
             Xunit.Assert.Equal((ICollection)ExpectedSixFramesCompletedAllRollsOneResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
 
@@ -167,9 +165,9 @@ namespace BowlingScoreCalculator.Tests
             };
 
             var service = new ScoreCalculatorService();
-
             var response = service.GetProgressScore(SevenFramesCompletedWithSpareAndStrikesRequest);
 
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
             Xunit.Assert.Equal(ExpectedSevenFramesCompletedWithSpareAndStrikesResponse.GameCompleted, response.GameCompleted);
             Xunit.Assert.Equal((ICollection)ExpectedSevenFramesCompletedWithSpareAndStrikesResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
         }
@@ -189,11 +187,11 @@ namespace BowlingScoreCalculator.Tests
             };
 
             var service = new ScoreCalculatorService();
-
             var response = service.GetProgressScore(SparesRequest);
 
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
             Xunit.Assert.Equal(ExpectedSparesResponse.GameCompleted, response.GameCompleted);
             Xunit.Assert.Equal((ICollection)ExpectedSparesResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
-        }       
+        } 
     }
 }
