@@ -15,7 +15,7 @@ namespace BowlingScoreCalculator.Tests
         [Fact]
         public void TestForEmptyRolls()
         {
-            var NullRequest = new ScoreCalculatorRequest(){ PinsDowned = null };
+            var NullRequest = new ScoreCalculatorRequest() { PinsDowned = null };
             var service = new ScoreCalculatorService();
             var response = service.GetProgressScore(NullRequest);
             Xunit.Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.status.Code);
@@ -68,8 +68,8 @@ namespace BowlingScoreCalculator.Tests
 
             var ExpectedPerfectGameResponse = new ScoreCalculatorResponse()
             {
-              FrameProgressScores =  new List<string> { "30", "60", "90", "120", "150", "180", "210", "240", "270", "300" },
-              GameCompleted = true
+                FrameProgressScores = new List<string> { "30", "60", "90", "120", "150", "180", "210", "240", "270", "300" },
+                GameCompleted = true
             };
 
             var service = new ScoreCalculatorService();
@@ -137,7 +137,7 @@ namespace BowlingScoreCalculator.Tests
 
             var ExpectedSixFramesCompletedAllRollsOneResponse = new ScoreCalculatorResponse()
             {
-                FrameProgressScores = new List<string> { "2", "4", "6", "8", "10", "12"},
+                FrameProgressScores = new List<string> { "2", "4", "6", "8", "10", "12" },
                 GameCompleted = false
             };
 
@@ -182,7 +182,7 @@ namespace BowlingScoreCalculator.Tests
 
             var ExpectedSparesResponse = new ScoreCalculatorResponse()
             {
-                FrameProgressScores = new List<string> { "20", "*"},
+                FrameProgressScores = new List<string> { "20", "*" },
                 GameCompleted = false
             };
 
@@ -192,6 +192,98 @@ namespace BowlingScoreCalculator.Tests
             Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
             Xunit.Assert.Equal(ExpectedSparesResponse.GameCompleted, response.GameCompleted);
             Xunit.Assert.Equal((ICollection)ExpectedSparesResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
-        } 
+        }
+
+        [Fact]
+        public void IncompleteFrameOnePriorStrike()
+        {
+            var PerfectGameRequest = new ScoreCalculatorRequest()
+            {
+                PinsDowned = new List<int> { 10, 10, 10, 9, 1, 5, 4, 9, 1, 10, 9 }
+            };
+
+            var ExpectedPerfectGameResponse = new ScoreCalculatorResponse()
+            {
+                FrameProgressScores = new List<string> { "30", "59", "79", "94", "103", "123", "*", "*" },
+                GameCompleted = false
+            };
+
+            var service = new ScoreCalculatorService();
+            var response = service.GetProgressScore(PerfectGameRequest);
+
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
+            Xunit.Assert.Equal(ExpectedPerfectGameResponse.GameCompleted, response.GameCompleted);
+            Xunit.Assert.Equal((ICollection)ExpectedPerfectGameResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
+
+        }
+
+        [Fact]
+        public void IncompleteFrameTwoPriorStrike()
+        {
+            var PerfectGameRequest = new ScoreCalculatorRequest()
+            {
+                PinsDowned = new List<int> { 9, 1, 10, 10, 10, 9 }
+            };
+
+            var ExpectedPerfectGameResponse = new ScoreCalculatorResponse()
+            {
+                FrameProgressScores = new List<string> { "20", "50", "79", "*", "*" },
+                GameCompleted = false
+            };
+
+            var service = new ScoreCalculatorService();
+            var response = service.GetProgressScore(PerfectGameRequest);
+
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
+            Xunit.Assert.Equal(ExpectedPerfectGameResponse.GameCompleted, response.GameCompleted);
+            Xunit.Assert.Equal((ICollection)ExpectedPerfectGameResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
+
+        }
+
+        [Fact]
+        public void IncompleteFramePriorSpare()
+        {
+            var PerfectGameRequest = new ScoreCalculatorRequest()
+            {
+                PinsDowned = new List<int> { 10, 10, 10, 9, 1, 5, 4, 9, 1, 9 }
+            };
+
+            var ExpectedPerfectGameResponse = new ScoreCalculatorResponse()
+            {
+                FrameProgressScores = new List<string> { "30", "59", "79", "94", "103", "122", "*" },
+                GameCompleted = false
+            };
+
+            var service = new ScoreCalculatorService();
+            var response = service.GetProgressScore(PerfectGameRequest);
+
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
+            Xunit.Assert.Equal(ExpectedPerfectGameResponse.GameCompleted, response.GameCompleted);
+            Xunit.Assert.Equal((ICollection)ExpectedPerfectGameResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
+
+        }
+
+        [Fact]
+        public void SingleNonStrikeRoll()
+        {
+            var PerfectGameRequest = new ScoreCalculatorRequest()
+            {
+                PinsDowned = new List<int> { 5 }
+            };
+
+            var ExpectedPerfectGameResponse = new ScoreCalculatorResponse()
+            {
+                FrameProgressScores = new List<string> { "*" },
+                GameCompleted = false
+            };
+
+            var service = new ScoreCalculatorService();
+            var response = service.GetProgressScore(PerfectGameRequest);
+
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.OK, response.status.Code);
+            Xunit.Assert.Equal(ExpectedPerfectGameResponse.GameCompleted, response.GameCompleted);
+            Xunit.Assert.Equal((ICollection)ExpectedPerfectGameResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
+
+        }
     }
 }
