@@ -8,7 +8,7 @@ using BowlingScoreCalculator.Interfaces;
 using BowlingScoreCalculator.Models;
 using Microsoft.Extensions.Logging;
 using System.Net;
-
+using BowlingScoreCalculator.Exceptions;
 
 namespace BowlingScoreCalculator.Controllers
 {
@@ -32,14 +32,19 @@ namespace BowlingScoreCalculator.Controllers
         /// <param name="request">ScoreCalculatorRequest</param>
         /// <returns>ScoreCalculatorResponse</returns>
         [HttpPost]
+        [CustomExceptionFilter]
         public ActionResult<ScoreCalculatorResponse> GetScores(ScoreCalculatorRequest request)
         {
             var response = _scoreCalculator.GetProgressScore(request);
 
-            if(response.status.Code == HttpStatusCode.BadRequest)
-                   return BadRequest(response);
+            if (response.status.Code == HttpStatusCode.InternalServerError)
+                throw new CustomException("Internal Server Error. Please contact Admin.", 500);
+
+            if (response.status.Code == HttpStatusCode.BadRequest)
+                return BadRequest(response);
+
             return Ok(response);
-         
+        
         }
     }
 }

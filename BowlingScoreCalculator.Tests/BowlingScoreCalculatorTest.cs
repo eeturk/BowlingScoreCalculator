@@ -285,5 +285,34 @@ namespace BowlingScoreCalculator.Tests
             Xunit.Assert.Equal((ICollection)ExpectedPerfectGameResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
 
         }
+
+        [Fact]
+        public void TooManyPinsDowned()
+        {
+            var TooManyPinsDownedRequest = new ScoreCalculatorRequest()
+            {
+                PinsDowned = new List<int> { 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 }
+            };
+
+            var service = new ScoreCalculatorService();
+            var response = service.GetProgressScore(TooManyPinsDownedRequest);
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.status.Code);
+
+        }
+
+        [Fact]
+        public void InvalidFrameScore()
+        {
+            var InvalidFrameRequest = new ScoreCalculatorRequest()
+            {
+                PinsDowned = new List<int> { 8, 9 }
+            };
+
+            var service = new ScoreCalculatorService();
+            var response = service.GetProgressScore(InvalidFrameRequest);
+            Xunit.Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.status.Code);
+
+        }
+
     }
 }
