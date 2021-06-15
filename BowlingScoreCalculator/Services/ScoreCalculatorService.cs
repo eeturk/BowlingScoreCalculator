@@ -58,6 +58,20 @@ namespace BowlingScoreCalculator.Services
 
                     if (bonusRollProvided)
                     {
+                        //exit if it's a perfect game - all strikes completed
+                        if (frameProgressScore == Constants.PerfectGame)
+                        {
+                           gameCompleted = true;
+                            break;
+                        }
+
+                        //bonus roll given but not thrown
+                        if (isStrike && rollsLeft.Count == 1)
+                        { 
+                            gameCompleted = false;
+                            break;
+                        }
+
                         continue;
                     }
 
@@ -105,14 +119,14 @@ namespace BowlingScoreCalculator.Services
                     }
 
                     framesCompleted++;
-                    bonusRollProvided = framesCompleted == Constants.MaxFramesCount && (isSpare || isStrike);                    
+                    bonusRollProvided = framesCompleted == Constants.MaxFramesCount && (isSpare || isStrike);
+                    gameCompleted = framesCompleted == Constants.MaxFramesCount;
 
                     if (bonusRollProvided && rollsLeft.Count > 3)
                         throw new CustomException("Too many pins downed.", 400);
                 }
 
-                gameCompleted = framesCompleted == Constants.MaxFramesCount;
-
+                
                 response.FrameProgressScores = frameProgressScores;
                 response.GameCompleted = gameCompleted;
                 response.status = new ScoreCalculatorResponse.Status()

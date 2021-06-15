@@ -35,16 +35,23 @@ namespace BowlingScoreCalculator.Controllers
         [CustomExceptionFilter]
         public ActionResult<ScoreCalculatorResponse> GetScores(ScoreCalculatorRequest request)
         {
+            _logger.LogTrace("Bowling game score calculation started..");
             var response = _scoreCalculator.GetProgressScore(request);
 
             if (response.status.Code == HttpStatusCode.InternalServerError)
+            {
+                _logger.LogCritical("[ERROR] Internal Server Error");
                 throw new CustomException("Internal Server Error. Please contact Admin.", 500);
-
-            if (response.status.Code == HttpStatusCode.BadRequest)
+            }
+            else if(response.status.Code == HttpStatusCode.BadRequest)
+            {
+                _logger.LogError("[ERROR] Bad Request ");
                 return BadRequest(response);
+            }
 
+            _logger.LogTrace("Bowling game score calculation completed..");
             return Ok(response);
-        
+            
         }
     }
 }

@@ -314,5 +314,28 @@ namespace BowlingScoreCalculator.Tests
 
         }
 
+        [Fact]
+        public void AllStrikesButBallNotThrown()
+        {
+            var PerfectGameRequest = new ScoreCalculatorRequest()
+            {
+                PinsDowned = new List<int> { 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 }
+            };
+
+            var ExpectedPerfectGameResponse = new ScoreCalculatorResponse()
+            {
+                FrameProgressScores = new List<string> { "30", "60", "90", "120", "150", "180", "210", "240", "270", "*" },
+                GameCompleted = false
+            };
+
+            var service = new ScoreCalculatorService();
+
+            var response = service.GetProgressScore(PerfectGameRequest);
+
+            Xunit.Assert.Equal(ExpectedPerfectGameResponse.GameCompleted, response.GameCompleted);
+            Xunit.Assert.Equal((ICollection)ExpectedPerfectGameResponse.FrameProgressScores, (ICollection)response.FrameProgressScores);
+
+        }
+
     }
 }
